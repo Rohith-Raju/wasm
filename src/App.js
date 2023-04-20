@@ -7,16 +7,16 @@ function App() {
   const [add,setAdd] = useState()
   useEffect(()=>{
     createModule().then((module)=>{
-      setAdd(()=>module.cwrap("add","number",["number","number"]))
+      setAdd(module.lerp(1,2,3))
     })
   },[])
-  console.log(add)
+  console.log(typeof add)
   if (!add){
     return "loading wasm"
   }
   return (
     <div className="App">
-      add = {add(1,2)}
+     {add}  
     </div>
   );
 }
