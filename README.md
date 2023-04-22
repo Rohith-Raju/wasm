@@ -39,4 +39,4 @@ useEffect(()=>{
 
 
 ## Output 
-[output](output.png)
+![output](output.png)
