@@ -129,5 +129,11 @@ emcc --no-entry src/matrix.cpp -o src/matrix.mjs \
   },[])
 ```
 
+## Matrices
+```
+        [1 , 2]    X   [1 , 2]    =      [7 , 10]
+        [3 , 4]        [3 , 4]           [15 , 22]
+```
+
 ## Output 
 ![output](./output.png)
