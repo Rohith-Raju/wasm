@@ -78,12 +78,7 @@ EMSCRIPTEN_BINDINGS(matrix_example)
 {
     class_<Matrix>("matrix")
         .constructor<int,int,const std::vector<int>>()
-        .function("getRows", &Matrix::getRows)
-        .function("getCols", &Matrix::getCols)
-        .function("getData", &Matrix::getData)
         .function("multiply", &Matrix::multiply)
-        .function("answer", &Matrix::answer);
-    
     register_vector<int>("vect");
 }
 

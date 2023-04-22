@@ -16,20 +16,6 @@ public:
 
     Matrix(int rows, int cols, const std::vector<int> &values) : rows(rows), cols(cols), data(values) {}
 
-    int getRows()
-    {
-        return rows;
-    }
-
-    int getCols()
-    {
-        return cols;
-    }
-
-    std::vector<int> getData(){
-        return data;
-    }
-
     int &operator()(int row, int col)
     {
         return data[row * cols + col];
@@ -62,22 +48,13 @@ public:
 
         return result;
     }
-
-    std::vector<int> answer()
-    {
-        return this->data;
-    }
 };
 
 EMSCRIPTEN_BINDINGS(matrix_example)
 {
     class_<Matrix>("matrix")
         .constructor<int,int,const std::vector<int>>()
-        .function("getRows", &Matrix::getRows)
-        .function("getCols", &Matrix::getCols)
-        .function("getData", &Matrix::getData)
         .function("multiply", &Matrix::multiply)
-        .function("answer", &Matrix::answer);
     
     register_vector<int>("vect");
 }
