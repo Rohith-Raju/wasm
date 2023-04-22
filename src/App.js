@@ -33,11 +33,10 @@ function App() {
 
   return (
     <div className="App">
-      {data.get(0)},
-      {data.get(1)},
-      <br></br>
-      {data.get(2)},
-      {data.get(3)}
+      <h1>{data.get(0)},{data.get(1)}</h1>
+      <h1>
+        {data.get(2)},{data.get(3)}
+      </h1>
     </div>
   );
 }

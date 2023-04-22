@@ -1,70 +1,133 @@
-# Getting Started with Create React App
+### This branch contains interaction between C++ classes and javascript using embind
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## C++ Matrix Multiplication code
 
-## Available Scripts
+```
+#include <iostream>
+#include <vector>
+#include <emscripten/bind.h>
 
-In the project directory, you can run:
+using namespace emscripten;
 
-### `npm start`
+class Matrix
+{
+private:
+    int rows;
+    int cols;
+    std::vector<int> data;
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+public:
+    Matrix(int rows, int cols) : rows(rows), cols(cols), data(rows * cols, 0) {}
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    Matrix(int rows, int cols, const std::vector<int> &values) : rows(rows), cols(cols), data(values) {}
 
-### `npm test`
+    int getRows()
+    {
+        return rows;
+    }
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    int getCols()
+    {
+        return cols;
+    }
 
-### `npm run build`
+    std::vector<int> getData(){
+        return data;
+    }
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    int &operator()(int row, int col)
+    {
+        return data[row * cols + col];
+    }
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    int operator()(int row, int col) const
+    {
+        return data[row * cols + col];
+    }
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    Matrix multiply(const Matrix &other) const
+    {
+        if (cols != other.rows)
+        {
+            throw std::invalid_argument("Matrix dimensions are not compatible for multiplication.");
+        }
 
-### `npm run eject`
+        Matrix result(rows, other.cols);
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < other.cols; j++)
+            {
+                for (int k = 0; k < cols; k++)
+                {
+                    result(i, j) += (*this)(i, k) * other(k, j);
+                }
+            }
+        }
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+        return result;
+    }
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    std::vector<int> answer()
+    {
+        return this->data;
+    }
+};
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+EMSCRIPTEN_BINDINGS(matrix_example)
+{
+    class_<Matrix>("matrix")
+        .constructor<int,int,const std::vector<int>>()
+        .function("getRows", &Matrix::getRows)
+        .function("getCols", &Matrix::getCols)
+        .function("getData", &Matrix::getData)
+        .function("multiply", &Matrix::multiply)
+        .function("answer", &Matrix::answer);
+    
+    register_vector<int>("vect");
+}
 
-## Learn More
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Emcripten Command
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+emcc --no-entry src/matrix.cpp -o src/matrix.mjs \
+	--pre-js  src/locateFile.js  \
+	  -s ENVIRONMENT='web'  \
+	  -s EXPORT_NAME='createModule'  \
+ 	  -s USE_ES6_IMPORT_META=0  \
+	  -lembind \
+	  -s MODULARIZE=1 \
+	  -O3 \
+```
 
-### Code Splitting
+## Glue Code 
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
+ useEffect(()=>{
+    createModule().then((module)=>{
+     var vect1 = new module.vect()
+     vect1.push_back(1)
+     vect1.push_back(2)
+     vect1.push_back(3)
+     vect1.push_back(4)
 
-### Analyzing the Bundle Size
+     var first = new module.matrix(2,2,vect1)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+     var vect2 = new module.vect()
+     vect2.push_back(1)
+     vect2.push_back(2)
+     vect2.push_back(3)
+     vect2.push_back(4)
 
-### Making a Progressive Web App
+     var second = new module.matrix(2,2,vect2)
+     
+     var result = first.multiply(second)
+     Setdata(result.getData())  
+    })
+  },[])
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Output 
+![output](./output.png)
