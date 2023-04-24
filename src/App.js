@@ -16,7 +16,7 @@ function App() {
   }
   return (
     <div className="App">
-      add = {add(1,2)}
+      <h1>add = {add(1, 2)}</h1>
     </div>
   );
 }

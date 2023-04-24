@@ -1,4 +1,19 @@
-### Emscripten command
+# Usage of  extern "C" to prevent C++ name mangling and ensure that your functions are exported with their original names.
+## C++ code 
+```
+#include <emscripten/emscripten.h>
+
+
+extern "C" {
+
+EMSCRIPTEN_KEEPALIVE int add(int a,int b){
+    return a+b;
+}
+
+}
+```
+
+## Emscripten command
 
 ```
 emcc --no-entry src/calculator.cpp -o src/calculator.mjs  \
@@ -11,4 +26,23 @@ emcc --no-entry src/calculator.cpp -o src/calculator.mjs  \
 	  -O3
 ```
 
-## Move the generated wasm file to the public folder
+### Glue Code
+```
+ const [add,setAdd] = useState()
+  useEffect(()=>{
+    createModule().then((module)=>{
+      setAdd(()=>module.cwrap("add","number",["number","number"]))
+    })
+  },[])
+  console.log(add)
+  if (!add){
+    return "loading wasm"
+  }
+  return (
+    <div className="App">
+      add = {add(1,2)}
+    </div>
+  );
+```
+## Output 
+![output](output.png)
